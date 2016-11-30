@@ -5,12 +5,6 @@ Created on Tue Sep  8 07:32:13 2015
 @author: phanquochuy
 """
 
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Jul 13 14:39:28 2015
-
-@author: huphan-osx
-"""
 from PyQt4 import QtGui
 from PyQt4.QtCore import (QByteArray, QDataStream, QFile, QFileInfo,
         QIODevice, QPoint, QPointF, QRectF, Qt, SIGNAL, QRect, QSize)
@@ -18,38 +12,136 @@ from PyQt4.QtGui import (QApplication, QWidget, QDockWidget, QStackedLayout,
                          QTabWidget, QVBoxLayout, QGridLayout, QSpinBox, QLabel,
                          QGraphicsView, QGraphicsScene, QGraphicsItem, 
                          QGraphicsTextItem, QColor, QBrush, QGroupBox,
-                         QListWidget, QListWidgetItem, QIcon, QFont, QPen)
+                         QListWidget, QPixmap, QPainter, QBitmap, QListWidgetItem, QIcon, QFont, QPen)
 
 import numpy as np
 from scipy.spatial.distance import euclidean as euc
 
+DEFAULT_COLOR = Qt.white
+DEFAULT_HIGH_COLOR = Qt.yellow
+DEFAULT_EDGE_COLOR = Qt.black
+DEFAULT_HIGH_EDGE_COLOR = Qt.blue
+DEFAULT_HANDLE_COLOR = Qt.green
+DEFAULT_HANDLE_SIZE = 10
+DEFAULT_EDGE_WIDTH = 1
+
+
+def colorPixmap(pix, color):
+    newPix = QPixmap(pix.size())
+    newPix.fill(Qt.transparent)
+    mask = pix.createMaskFromColor(QColor(0, 0, 0, 0), Qt.MaskInColor)
+    p = QPainter(newPix)
+    p.setRenderHint(QPainter.SmoothPixmapTransform)
+    p.setRenderHint(QPainter.Antialiasing)
+
+    p.setBackgroundMode(Qt.TransparentMode)
+    p.setPen(color)
+    p.drawPixmap(newPix.rect(), mask, pix.rect())
+    p.end()
+    return newPix
+
+
+def _circle_to_poly(center, r, astep=10):
+    i = 0
+    points = []
+    while i < np.pi * 2:
+        points.append([np.math.cos(i) * r +  center[0], np.math.sin(i) * r + center[1]])
+        i += np.math.radians(astep)
+
+    return points
+
 
 def _NC(rgb):
     return np.array([float(rgb.red()) / 255., float(rgb.green()) / 255., float(rgb.blue()) / 255.] )
-    
+
+
 def _QC(rgb):
+    if np.max(rgb) <= 1:
+        fact = 255
+    else:
+        fact = 1
+
     if len(rgb) == 3:
         alpha = 255
     elif len(rgb) == 4:
-        alpha = int(rgb[3] * 255)
-    return QColor(int(rgb[0] * 255),int(rgb[1] * 255),int(rgb[2] * 255), alpha)
+        alpha = int(rgb[3] * fact)
+
+    return QColor(int(rgb[0] * fact),int(rgb[1] * fact),int(rgb[2] * fact), alpha)
+
 
 def _QP(pos):
     return QPointF(pos[0], pos[1])
-    
+
+
 def _NP(point):
     return np.array([point.x(), point.y()])
 
 
 class ControllableItem(QGraphicsItem):
-    def __init__(self, color, parent=None, idd=0, handle_size=10, handle_color=Qt.green):
+    def __init__(self, color, parent=None, idd=0, handle_size=10,
+                 handle_color=DEFAULT_HANDLE_COLOR,
+                 edge_color=DEFAULT_EDGE_COLOR, edge_width=DEFAULT_EDGE_WIDTH):
         super(ControllableItem, self).__init__(parent)
         self.controls = []
-        self.handle_size = handle_size
-        self.handle_color = handle_color
-        self.color = color
-        self.idd = idd
-        
+        self._handle_size = handle_size
+        self._handle_color = handle_color
+        self._color = color
+        self._edge_color = edge_color
+        self._idd = idd
+        self._edge_width = edge_width
+
+    @property
+    def edge_width(self):
+        return self._edge_width
+
+    @edge_width.setter
+    def edge_width(self, value):
+        self._edge_width = value
+
+    @property
+    def idd(self):
+        return self._idd
+
+    @idd.setter
+    def idd(self, value):
+        self._idd = value
+
+    @property
+    def color(self):
+        return self._color
+
+    @color.setter
+    def color(self, value):
+        self._color = value
+        self.update()
+
+    @property
+    def handle_color(self):
+        return self._handle_color
+
+    @handle_color.setter
+    def handle_color(self, value):
+        self._handle_color = value
+        self.update()
+
+    @property
+    def handle_size(self):
+        return self._handle_size
+
+    @handle_size.setter
+    def handle_size(self, value):
+        self._handle_size = value
+        self.update()
+
+    @property
+    def edge_color(self):
+        return self._edge_color
+
+    @edge_color.setter
+    def edge_color(self, value):
+        self._edge_color = value
+        self.update()
+
     def addHandle(self, pos):
         if len(self.childItems()) == 0:
             idd = 0
@@ -59,8 +151,15 @@ class ControllableItem(QGraphicsItem):
         control = HandleItem(_QP(pos), size=self.handle_size, idd=idd, parent=self, color=self.handle_color)
         self.controls.append(control)
         return control
-        
+
+    def hideHandles(self):
+        for c in self.controls:
+            c.setVisible(False)
+
     def points(self):
+        pass
+
+    def polies(self):
         pass
 
 
@@ -81,6 +180,7 @@ class InteractiveScene(QGraphicsScene):
 
         return super(InteractiveScene, self).mousePressEvent(e)
 
+
 class GroupItem(QGraphicsItem):
     def __init__(self, items, idd, parent=None):
         super(GroupItem, self).__init__(parent)
@@ -88,8 +188,6 @@ class GroupItem(QGraphicsItem):
         for item in items:
             item.setParentItem(self)
 
-
-    
     def mousePressEvent(self, e):
         for ch in self.childItems():
             self.scene().sendEvent(ch, e)
@@ -122,7 +220,21 @@ class GroupItem(QGraphicsItem):
             child.setZValue(p_float)
 
         super(GroupItem, self).setZValue(p_float)
- 
+
+    def points(self):
+        points = []
+        for child in self.childItems():
+            points.append(child.points())
+
+        return points
+
+    def polies(self):
+        points = []
+        for child in self.childItems():
+            points.append(child.polies())
+
+        return points
+
 
 class RectItem(ControllableItem):
     def __init__(self, p1, p2, color, parent, idd, main):
@@ -141,8 +253,7 @@ class RectItem(ControllableItem):
         hsize = self.controls[0].size
         
         self.prepareGeometryChange()
-        self.rect = QRectF(self.controls[0].x() - hsize, self.controls[0].y() - hsize
-        , self.w + hsize * 2, self.h + hsize * 2)
+        self.rect = QRectF(self.controls[0].x() - hsize, self.controls[0].y() - hsize, self.w + hsize * 2, self.h + hsize * 2)
         
     def paint(self, painter, option, widget):
         qp = painter
@@ -156,115 +267,138 @@ class RectItem(ControllableItem):
         return self.rect
 
     def points(self):
-        return np.array(self.controls[0].points() + self.controls[1].points()) 
-        
-class CircleItem(QGraphicsItem):
-    def __init__(self, center, r, color, parent, idd, main):
-        super(CircleItem, self).__init__(parent)
+        return np.array(self.controls[0].points() + self.controls[1].points())
+
+    def polies(self):
+        p1 = self.controls[0].points()[0]
+        p2 = self.controls[1].points()[0]
+        return np.array([list(p1), [p2[0], p1[1]], list(p2), [p1[0], p2[1]]])
+
+
+class CircleItem(ControllableItem):
+    def __init__(self, center, r, parent, idd, main, color=DEFAULT_COLOR,
+                 edge_color=DEFAULT_EDGE_COLOR, handle_color=DEFAULT_HANDLE_COLOR,
+                 handle_size=8, edge_width=DEFAULT_EDGE_WIDTH):
+        super(CircleItem, self).__init__(color=color, parent=parent, edge_color=edge_color, idd=idd,
+                                         handle_color=handle_color, handle_size=handle_size, edge_width=edge_width)
         self.main = main
         self.center = center
-        self.idd = idd
-        self.r = r 
-        self.color = color
-        self.handle_size = 8
-        self.controls = []
-        self.setFlags(self.flags()                  |
-                    QGraphicsItem.ItemIsSelectable  |
-#                    QGraphicsItem.ItemIsMovable     |
-                    QGraphicsItem.ItemSendsGeometryChanges |            
-                    QGraphicsItem.ItemIsFocusable   )   
+        self.r = r
+        self.setFlags(self.flags() |
+                      QGraphicsItem.ItemIsSelectable |
+                      QGraphicsItem.ItemSendsGeometryChanges |
+                      QGraphicsItem.ItemIsFocusable)
         
         self.addHandle(center)
-        self.addHandle([center[0] + r, center[1]])
-        '''
-        if len(self.controls) > 0:
-            titem = QGraphicsTextItem(str(self.idd),parent=self.controls[0])
-            titem.setPos(QPointF(0,0))
-            titem.setFont(QFont('',40))
-            #titem.scale(1,-1)
-        '''    
+        self.addHandle([center[0], center[1] + r])
+        self.rect = None
         self.updateRect()
+
+    def hideHandles(self):
+        for c in self.controls:
+            c.setVisible(False)
     
     def updateRect(self):
         self.center = _NP(self.controls[0])
-        self.r = euc( _NP(self.controls[1]) , self.center)
+        self.r = euc(_NP(self.controls[1]), self.center)
         
         self.prepareGeometryChange()
         self.rect = QRectF(self.center[0] - self.r - 10, self.center[1] - self.r - 10
-        , self.r * 2 + 20, self.r * 2 + 20)
-        #self.parentItem().update()
-        
+                           , self.r * 2 + 20, self.r * 2 + 20)
+
     def paint(self, painter, option, widget):
         qp = painter
-        qp.setPen(QPen(QBrush(self.color), 5))
+        qp.setPen(QPen(QBrush(self.edge_color), self.edge_width))
         qp.setBrush(QBrush(self.color, Qt.SolidPattern))
         if hasattr(self, 'controls'):
             if len(self.controls) > 0:
                 qp.drawEllipse(_QP(self.center), self.r, self.r)
     
     def boundingRect(self):
-        #print self.rect
         return self.rect
-    
-    def addHandle(self, pos):
-        if len(self.childItems()) == 0:
-            idd = 0
-        else:
-            idd = self.childItems()[-1].idd + 1
-            
-        control = HandleItem(_QP(pos), size=self.handle_size, idd=idd, parent=self, color=self.color)
-                
-        self.controls.append(control)
-        #self.updateRect()
-        
+
     def points(self):
-        return np.array([list(self.center), [self.r, 0]]) 
+        return np.array([list(self.center), [self.r, 0]])
+
+    def polies(self):
+        return [_circle_to_poly(self.center, self.r, 10)]
+
 
 class RingItem(CircleItem):
-    def __init__(self, center, r1, r2, color, parent, idd, main):
-        super(RingItem, self).__init__(center, r2, color, parent, idd, main)
-        self.addHandle([r1 + center[0] , center[1]])
+    def __init__(self, center, r1, r2, color, parent, idd, main,
+                 edge_color=DEFAULT_EDGE_COLOR,
+                 edge_width=DEFAULT_EDGE_WIDTH):
+        super(RingItem, self).__init__(center=center, r=r2, parent=parent, idd=idd, main=main,
+                                       color=color, edge_color=edge_color, edge_width=edge_width)
+        self.addHandle([r1 + center[0], center[1]])
         self.r1 = r1
         
     def points(self):
-        return np.array([list(self.center), [ self.r1, 0], \
-        [ self.r, 0]])
+        return np.array([list(self.center), [self.r1, 0], [self.r, 0]])
     
     def updateRect(self):
         super(RingItem, self).updateRect()
         if len(self.controls) > 2:
-            self.r1 = euc( _NP(self.controls[2]) , self.center)
-    
+            self.r1 = euc(_NP(self.controls[2]), self.center)
+
+    def polies(self):
+        return [_circle_to_poly(self.center, self.r, 10), _circle_to_poly(self.center, self.r1, 10)]
+
     def paint(self, qp, option, widget):
         super(RingItem, self).paint(qp, option, widget)
         qp.drawEllipse(_QP(self.center), self.r1, self.r1)
+
+
+class SRectItem(RingItem):
+    def __init__(self, center, r1, r2, color, parent, idd, main,
+                 edge_color=DEFAULT_EDGE_COLOR,
+                 edge_width=DEFAULT_EDGE_WIDTH):
+        super(SRectItem, self).__init__(center=center, r1=r1, r2=r2, parent=parent, idd=idd, main=main,
+                                        color=color, edge_color=edge_color, edge_width=edge_width)
+
+    def updateRect(self):
+        self.center = _NP(self.controls[0])
+        self.r = euc(_NP(self.controls[1]), self.center)
+        self.prepareGeometryChange()
+        self.rect = QRectF(self.center[0] - self.r - 10, self.center[1] - self.r - 10
+                           , self.r * 2 + 20, self.r * 2 + 20)
+
+    def paint(self, qp, option, widget):
+        x, y = self.center[0] - self.r, self.center[1] - self.r
+        qp.drawRect(x, y, self.r * 2, self.r - self.r1)
+
+    def boundingRect(self):
+        return self.rect
+
+    def polies(self):
+        pass
+
+    def points(self):
+        pass
+
         
-        
-class PolylineItem(QGraphicsItem):
-    def __init__(self, points, color, parent, idd, main):
-        super(PolylineItem, self).__init__(parent)
+class PolylineItem(ControllableItem):
+    def __init__(self, points, color, parent, idd, main, edge_color=DEFAULT_EDGE_COLOR,
+                 handle_color=DEFAULT_HANDLE_COLOR, edge_width=DEFAULT_EDGE_WIDTH):
+        super(PolylineItem, self).__init__(parent, idd=idd, color=color, parent=parent, edge_color=edge_color,
+                                           handle_color=handle_color, edge_width=edge_width)
         self.main = main
-        self.idd = idd
         self.controls = []
         self.breaks = []
-        self.color = color
         self.handle_size = 8
-        self.setFlags(self.flags()                  |
-                    QGraphicsItem.ItemIsSelectable  |
-#                    QGraphicsItem.ItemIsMovable     |
-                    QGraphicsItem.ItemSendsGeometryChanges |               
-                    QGraphicsItem.ItemIsFocusable   )   
-        
-        
+        self.setFlags(self.flags() |
+                      QGraphicsItem.ItemIsSelectable |
+                      QGraphicsItem.ItemSendsGeometryChanges |
+                      QGraphicsItem.ItemIsFocusable)
+
         for px, p in enumerate(points):
             self.addHandle(p)
         
         if len(self.controls) > 0:
-            titem = QGraphicsTextItem(str(self.idd),parent=self.controls[0])
+            titem = QGraphicsTextItem(str(self.idd), parent=self.controls[0])
             titem.setPos(QPointF(0,0))
             titem.setFont(QFont('',40))
-            #titem.scale(1,-1)
-            
+
         self.updateRect()
         
     def paint(self, painter, option, widget):
@@ -413,7 +547,7 @@ class HandleItem(QGraphicsItem):
             
     def itemChange(self, change, value):
         if change == QGraphicsItem.ItemPositionChange:
-            self.parentItem().updateRect()
+            self.parentItem()._updateRect()
         return super(HandleItem, self).itemChange(change, value)
         
     def setSize(self, size):
