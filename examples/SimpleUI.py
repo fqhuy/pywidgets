@@ -4,7 +4,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QVBoxLayout, QGridLayout, QWidget, QAction, QGraphicsView, \
     QMainWindow, QDockWidget
 
-from qt5.GraphicsItems import InteractiveScene, PolylineItem, RectItem, CircleItem
+from qt5.GraphicsItems import InteractiveScene, PolylineItem, RectItem, CircleItem, SplineItem, RingItem
 import sys
 
 
@@ -36,9 +36,11 @@ class MainGUI(QMainWindow):
         # Add the axes
         self.scene.addLine(0, 0, 1000, 0)
         self.scene.addLine(0, 0, 0, 1000)
-        test_item = PolylineItem([[0, 0], [100, 0], [100, 100], [0, 100]])
+        # test_item = SplineItem([[0, 0], [100, 100], [0, 150], [50, 200]])
+        # test_item = PolylineItem([[0, 0], [100, 0], [100, 100], [0, 100]])
         # test_item = RectItem(5, 5, 55, 55)
         # test_item = CircleItem(200, 200, 50)
+        test_item = RingItem(200, 200, 50, 100)
         self.scene.addItem(test_item)
 
         self.view.setScene(self.scene)

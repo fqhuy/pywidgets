@@ -8,7 +8,7 @@ Created on Tue Sep  8 07:32:13 2015
 from PyQt5 import QtGui
 from PyQt5.QtCore import (QByteArray, QDataStream, QFile, QFileInfo,
         QIODevice, QPoint, QPointF, QRectF, Qt, QRect, QSize, pyqtSignal, pyqtSlot)
-from PyQt5.QtGui import (QColor, QBrush, QPixmap, QPainter, QBitmap, QIcon, QFont, QPen, QTransform)
+from PyQt5.QtGui import (QColor, QBrush, QPixmap, QPainter, QBitmap, QIcon, QFont, QPen, QTransform, QPainterPath)
 from PyQt5.QtWidgets import (QGraphicsScene, QGraphicsItem, QGraphicsTextItem)
 
 import numpy as np
@@ -17,13 +17,15 @@ from pywidgets.qt5.DataModels import *
 from pywidgets.qt5.Common import *
 from pywidgets.qt5.Utils import _NC, _NP, colorPixmap, _QC, _QP, _circle_to_poly
 
-DEFAULT_COLOR = Qt.white
+DEFAULT_COLOR = QColor(255, 255, 150, 50)
 DEFAULT_HIGH_COLOR = Qt.yellow
 DEFAULT_EDGE_COLOR = Qt.black
 DEFAULT_HIGH_EDGE_COLOR = Qt.blue
 DEFAULT_HANDLE_COLOR = Qt.green
 DEFAULT_HANDLE_SIZE = 10
 DEFAULT_EDGE_WIDTH = 2
+DEFAULT_ANN_EDGE_STYLE = Qt.DashLine
+DEFAULT_ANN_EDGE_WIDTH = 1.5
 DEFAULT_IDMAN = IDManager()
 
 
@@ -67,6 +69,7 @@ class ControllableItem(QGraphicsItem):
 
     """
     # deleted = pyqtSignal(int, name='itemDeleted')
+    HandlePositionHasChanged = 100
 
     def __init__(self, model, color=DEFAULT_COLOR, parent=None, label="item", handle_size=10,
                  handle_color=DEFAULT_HANDLE_COLOR,
@@ -94,11 +97,6 @@ class ControllableItem(QGraphicsItem):
         self._color = color
         self._edge_color = edge_color
 
-        # create handles from control points
-        cpoints = model.control_points
-        for cp in cpoints:
-            self.addHandle(cp)
-
         # the bounding rectangle
         self._rect = QRectF(0, 0, 100, 100)
         self._idd = DEFAULT_IDMAN.next()
@@ -108,6 +106,9 @@ class ControllableItem(QGraphicsItem):
         #               QGraphicsItem.ItemIsSelectable |
         #               QGraphicsItem.ItemSendsGeometryChanges |
         #               QGraphicsItem.ItemIsFocusable)
+
+        # create handles from control points
+        self.control_points = self.model.control_points
 
         self._label = QGraphicsTextItem(label, self)
         self._label.setPos(QPointF(self.rect.x(), self.rect.y()))
@@ -122,14 +123,14 @@ class ControllableItem(QGraphicsItem):
         :param value:
         :return:
         """
-        # print('item changed')
-        self.model.control_points = self.control_points
-        self.update()
+        if change == self.HandlePositionHasChanged:
+            self.model.control_points = self.control_points
+            self.update()
+
         return super(ControllableItem, self).itemChange(change, value)
 
     def modelChanged(self, change=0):
-        pass
-        # self.control_points
+        self.control_points = self.model.control_points
         # print('model changed')
 
     @property
@@ -229,6 +230,18 @@ class ControllableItem(QGraphicsItem):
         """
         return np.array([[cp.x(), cp.y()] for cp in self._controls])
 
+    @control_points.setter
+    def control_points(self, points):
+        for ctr in self._controls:
+            self.scene().removeItem(ctr)
+            del ctr
+
+        self._controls = []
+        for cp in points:
+            self.addHandle(cp)
+
+        self._updateRect()
+
     @abstractmethod
     def _paintMe(self, qp, option, widget):
         """
@@ -306,10 +319,7 @@ class LayerStack(object):
 
     @property
     def current_item_id(self):
-        # if self.current_item_id in self.current_layer.items:
         return self._current_item_id
-        # else:
-        #     return -1
 
     @current_item_id.setter
     def current_item_id(self, idd):
@@ -542,7 +552,8 @@ class PolylineItem(ControllableItem):
 
     def mousePressEvent(self, e):
         if e.button() == 1 and e.modifiers() == Qt.ControlModifier:
-            self.addHandle(_NP(e.scenePos()))
+            self.model.addControlPoints(_NP(e.scenePos())[None, ...])
+            # self.addHandle(_NP(e.scenePos()))
 
 
 class RectItem(ControllableItem):
@@ -581,127 +592,79 @@ class CircleItem(ControllableItem):
         qp.drawEllipse(_QP(self.model.center), self.model.r, self.model.r)
 
 
-class RingItem(CircleItem):
-    def __init__(self, center, r1, r2, color, parent, idd, main,
-                 edge_color=DEFAULT_EDGE_COLOR,
-                 edge_width=DEFAULT_EDGE_WIDTH):
-        super(RingItem, self).__init__(center=center, r=r2, parent=parent, idd=idd, main=main,
-                                       color=color, edge_color=edge_color, edge_width=edge_width)
-        self.addHandle([r1 + center[0], center[1]])
-        self.r1 = r1
-        
-    def points(self):
-        return np.array([list(self.center), [self.r1, 0], [self.r, 0]])
-    
-    def _updateRect(self):
-        super(RingItem, self)._updateRect()
-        if len(self.controls) > 2:
-            self.r1 = euc(_NP(self.controls[2]), self.center)
-
-    def polies(self):
-        return [_circle_to_poly(self.center, self.r, 10), _circle_to_poly(self.center, self.r1, 10)]
-
-    def paint(self, qp, option, widget=None):
-        super(RingItem, self).paint(qp, option, widget)
-        qp.drawEllipse(_QP(self.center), self.r1, self.r1)
-
-
-class SRectItem(RingItem):
-    def __init__(self, center, r1, r2, color, parent, idd, main,
-                 edge_color=DEFAULT_EDGE_COLOR,
-                 edge_width=DEFAULT_EDGE_WIDTH):
-        super(SRectItem, self).__init__(center=center, r1=r1, r2=r2, parent=parent, idd=idd, main=main,
-                                        color=color, edge_color=edge_color, edge_width=edge_width)
+class RingItem(ControllableItem):
+    def __init__(self, x, y, inner_r, outer_r, **kwargs):
+        model = Ring(x, y, inner_r, outer_r)
+        super(RingItem, self).__init__(model=model, **kwargs)
 
     def _updateRect(self):
-        self.center = _NP(self.controls[0])
-        self.r = euc(_NP(self.controls[1]), self.center)
-        self.prepareGeometryChange()
-        self.rect = QRectF(self.center[0] - self.r - 10, self.center[1] - self.r - 10
-                           , self.r * 2 + 20, self.r * 2 + 20)
+        center = self.model.center
+        r = self.model.outer_r
+        self.rect = self._adjustEdge(QRectF(center[0] - r, center[1] - r, r * 2, r * 2))
 
-    def paint(self, qp, option, widget=None):
-        x, y = self.center[0] - self.r, self.center[1] - self.r
-        qp.drawRect(x, y, self.r * 2, self.r - self.r1)
+    def _paintMe(self, qp, option, widget=None):
+        qp.drawEllipse(_QP(self.model.center), self.model.outer_r, self.model.outer_r)
+        qp.drawEllipse(_QP(self.model.center), self.model.inner_r, self.model.inner_r)
 
-    def boundingRect(self):
-        return self.rect
 
-    def polies(self):
-        pass
+class SRectItem(ControllableItem):
+    def __init__(self, x, y, inner_a, outer_a, **kwargs):
+        model = Ring(x, y, inner_a, outer_a)
+        super(SRectItem, self).__init__(model=model, **kwargs)
 
-    def points(self):
-        pass
+    def _updateRect(self):
+        center = self.model.center
+        r1 = self.model.outer_r
+        self.rect = self._adjustEdge(QRectF(center[0] - r1, center[1] - r1, r1 * 2, r1 * 2))
+
+    def _paintMe(self, qp, option, widget=None):
+        x, y = self.model.center[0] - self.model.inner_r, self.model.center[1] - self.model.inner_r
+        qp.drawRect(x, y, self.model.inner_r * 2, self.model.inner_r * 2)
+
+        x, y = self.model.center[0] - self.model.outer_r, self.model.center[1] - self.model.outer_r
+        qp.drawRect(x, y, self.model.outer_r * 2, self.model.outer_r * 2)
 
 
 class SplineItem(ControllableItem):
     def __init__(self, points, **kwargs):
-        model = Polyline(points)
-        super(SplineItem, self).__init__(model, kwargs)
-        for px, p in enumerate(points):
-            self.addHandle(p)
+        model = Spline(points)
+        super(SplineItem, self).__init__(model, **kwargs)
 
-        self._updateRect()
+    def _paintMe(self, qp, option, widget=None):
+        path = QPainterPath(_QP(self.model.control_points[0]))
+        ann_path = QPainterPath()
+        cur_point = 0
+        while cur_point < len(self.model.control_points) - 1:
+            path.cubicTo(_QP(self.model.control_points[cur_point + 1]),
+                         _QP(self.model.control_points[cur_point + 2]),
+                         _QP(self.model.control_points[cur_point + 3]))
 
-    def paint(self, qp, option, widget=None):
-        qp.setPen(QPen(QBrush(self.color), 5))
-        qp.drawPolyline(*[c.pos() for c in self.controls])
-        if self.isSelected():
-            qp.setPen(QPen(QBrush(self.color), 5, Qt.DotLine))
-            qp.drawRect(self.boundingRect())
+            ann_path.moveTo(_QP(self.model.control_points[cur_point + 0]))
+            ann_path.lineTo(_QP(self.model.control_points[cur_point + 1]))
+            ann_path.moveTo(_QP(self.model.control_points[cur_point + 3]))
+            ann_path.lineTo(_QP(self.model.control_points[cur_point + 2]))
 
-        super(SplineItem, self).paint(qp, option, widget)
+            cur_point += 3
+
+        qp.drawPath(path)
+        qp.setPen(QPen(DEFAULT_ANN_EDGE_STYLE))
+        qp.drawPath(ann_path)
 
     def __len__(self):
         return len(self.controls)
 
     def _updateRect(self):
-        pos = self.toPolies()[0]
-        if len(pos) > 0:
-            xmax, xmin, ymax, ymin = pos[:, 0].max(), pos[:, 0].min(), pos[:, 1].max(), pos[:, 1].min()
-            self.prepareGeometryChange()
-            self._rect = QRectF(xmin - 5, ymin - 5, xmax - xmin + 5, ymax - ymin + 5)
-
-    def remove(self, control):
-        control.setParentItem(None)
-        if control.idd == self.controls[-1].idd:
-            if len(self.controls) >= 2:
-                self.controls[-2].setSize(self.handle_size)
-                self.controls[-2].setColor(Qt.black)
-
-        if control.idd == self.controls[0].idd:
-            if len(self.controls) >= 2:
-                self.controls[1].setSize(self.handle_size)
-                self.controls[1].setColor(Qt.white)
-
-        for cx, c in enumerate(self.controls):
-            if c.idd == control.idd:
-                del self.controls[cx]
-                break
-
-        self.update()
-
-    def moveBy(self, dx, dy):
-        for control in self.controls:
-            control.setPos(control.x() + dx, control.y() + dy)
-
-    def scaleBy(self, sx, sy):
-        for control in self.controls:
-            control.setPos(control.x() * sx, control.y() * sy)
+        pos = self.model.toPolies()[0]
+        xmax, xmin, ymax, ymin = pos[:, 0].max(), pos[:, 0].min(), pos[:, 1].max(), pos[:, 1].min()
+        self.rect = self._adjustEdge(QRectF(xmin, ymin, xmax - xmin, ymax - ymin))
 
     def boundingRect(self):
         self._updateRect()
-        return self._rect
+        return self.rect
 
     def mousePressEvent(self, e):
         if e.button() == 1 and e.modifiers() == Qt.ControlModifier:
-            self.addHandle(e.scenePos())
-
-    def itemChange(self, change, value):
-        return super(SplineItem, self).itemChange(change, value)
-
-    def toPolies(self):
-        return np.array([np.array([[c.x(), c.y()] for c in self.controls])])
+            self.model.addControlPoints(_NP(e.scenePos())[None, :])
 
         
 class HandleItem(QGraphicsItem):
@@ -741,7 +704,7 @@ class HandleItem(QGraphicsItem):
             
     def itemChange(self, change, value):
         if change == QGraphicsItem.ItemPositionChange:
-            self.parentItem().itemChange(change, value)
+            self.parentItem().itemChange(ControllableItem.HandlePositionHasChanged, value)
         return super(HandleItem, self).itemChange(change, value)
         
     def setSize(self, size):
