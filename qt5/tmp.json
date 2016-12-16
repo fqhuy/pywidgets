@@ -1,0 +1,71 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "label": ""
+      },
+      "geometry": {
+        "type": "MultiSpline",
+        "coordinates": [
+          [
+            [
+              0,
+              0
+            ],
+            [
+              100,
+              100
+            ],
+            [
+              0,
+              150
+            ],
+            [
+              50,
+              200
+            ]
+          ],
+          [
+            [
+              200,
+              200
+            ],
+            [
+              300,
+              300
+            ],
+            [
+              200,
+              350
+            ],
+            [
+              250,
+              400
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "label": ""
+      },
+      "geometry": {
+        "type": "Polyline",
+        "coordinates": [
+          [
+            0,
+            0
+          ],
+          [
+            10,
+            10
+          ]
+        ]
+      }
+    }
+  ]
+}

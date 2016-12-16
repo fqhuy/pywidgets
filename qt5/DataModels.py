@@ -18,29 +18,28 @@ class Geometry(QObject):
     def __init__(self):
         super(Geometry, self).__init__()
 
-    def _jsonTemplate(self):
+    def _toDict(self):
         return {
             "type": "Feature",
             "geometry": {
-                "type": "",
-                "coordinates": []
+                "type": type(self).__name__,
+                "coordinates": self.control_points.tolist()
             },
             "properties": {
                 "label": ""
             }
         }
 
-    # @abstractmethod
+    def _fromDict(self, d):
+        pass
+
     def toString(self):
         """convert this object to a string for serialization
         :return:
         """
-        d = self._jsonTemplate()
-        d['geometry']['coordinates'] = self.control_points.tolist()
-        d['properties']['label'] = type(self).__name__
+        d = self._toDict()
         return json.dumps(d)
 
-    # @abstractmethod
     def fromString(self, string):
         """
         parse a string and return a Geometry object
@@ -80,51 +79,6 @@ class Geometry(QObject):
         :return:
         """
         self.changed.emit(change)
-
-
-class Group(Geometry):
-    def __init__(self, geometries):
-        """
-        :param geometries: must be a list of Geometry
-        """
-        super(Group, self).__init__()
-        self._geos = geometries
-
-    @property
-    def geometries(self):
-        return self._geos
-
-    @geometries.setter
-    def geometries(self, value):
-        if not isinstance(value, list):
-            raise ValueError('value must be a list')
-
-        if sum([issubclass(v.__class__, Geometry) for v in value]) == len(value):
-            self._geos = value
-        else:
-            raise ValueError('objects in the list must be Geometry')
-
-    def toString(self):
-        string = ""
-        for geo in self.geometries:
-            string += super(Group, self).toString(geo)
-
-        return string
-
-    def fromString(self, text):
-        # TODO: Under construction
-        features = json.loads(text)
-        geos = []
-        for feature in features:
-            tmp = json.dumps(feature)
-            # geos.append(super())
-
-    def toPolies(self):
-        return [geo.toPolies() for geo in self.geometries]
-
-    @property
-    def control_points(self):
-        return np.array([])
 
 
 class Polyline(Geometry):
@@ -300,6 +254,7 @@ class Spline(Geometry):
 
         super(Spline, self).__init__()
 
+
     def toPolies(self):
         # TODO: implement this
         return self._points[None, ...]
@@ -326,7 +281,90 @@ class Spline(Geometry):
         self.update()
 
 
-class MultiSpline(Group):
+class Group(Geometry):
+    def __init__(self, geometries):
+        """
+        :param geometries: must be a list of Geometry
+        """
+        super(Group, self).__init__()
+        self._geos = geometries
+
+    @property
+    def geos(self):
+        return self._geos
+
+    @geos.setter
+    def geos(self, value):
+        if not isinstance(value, list):
+            raise ValueError('value must be a list')
+
+        if sum([issubclass(v.__class__, Geometry) for v in value]) == len(value):
+            self._geos = value
+        else:
+            raise ValueError('objects in the list must be Geometry')
+
+    def toString(self):
+        d = self._toDict()
+        cps = []
+        types = []
+        for geo in self.geos:
+            cps.append(geo.control_points.tolist())
+            types.append(type(geo).__name__)
+
+        d['geometry']['coordinates'] = cps
+        d['geometry']['properties']['types'] = types
+        return json.dumps(d)
+
+    def fromString(self, text):
+        # TODO: Under construction
+        features = json.loads(text)
+        geos = []
+        for feature in features:
+            tmp = json.dumps(feature)
+            # geos.append(super())
+
+    def toPolies(self):
+        return [geo.toPolies() for geo in self.geometries]
+
+    @property
+    def control_points(self):
+        return np.array([])
+
+
+class MultiGeometry(Geometry):
+    """
+    Abstract class for all multi-geometry
+    """
+    def __init__(self, geos):
+        self._geos = geos
+        super(MultiGeometry, self).__init__()
+
+    @property
+    def geos(self):
+        return self._geos
+
+    def _toDict(self):
+        d = super(MultiGeometry, self)._toDict()
+        cps = []
+        for geo in self.geos:
+            cps.append(geo.control_points.tolist())
+        d['geometry']['coordinates'] = cps
+        return d
+
+    def fromString(self, string):
+        # TODO: under construction
+        d = json.loads(string)
+        pass
+
+    @property
+    def control_points(self):
+        return np.vstack([geo.control_points for geo in self._geos])
+
+    def toPolies(self):
+        return np.vstack([geo.toPolies()[0] for geo in self._geos])
+
+
+class MultiSpline(MultiGeometry):
     def __init__(self, points):
         splines = []
         for ps in points:
@@ -334,41 +372,59 @@ class MultiSpline(Group):
         super(MultiSpline, self).__init__(splines)
 
 
-class MultiPolygon(Group):
+class MultiPolyline(Group):
     def __init__(self, points):
         polygons = []
         for ps in points:
             polygons.append(Spline(ps))
-        super(MultiPolygon, self).__init__(polygons)
+        super(MultiPolyline, self).__init__(polygons)
 
 
-class AnnotationModel(Group):
+class AnnotationModel(object):
     """Model for Annotating Objects
 
     """
-    def __init__(self, regions, label):
+    __geos__ = {'MultiSpline': MultiSpline,
+                "MultiPolyline": MultiPolyline,
+                "Spline": Spline,
+                "Polyline": Polyline}
+
+    def __init__(self, regions):
         """
         :param regions: list of Geometries
         :param label:
         """
-        self._label = label
-        super(AnnotationModel, self).__init__(regions)
+        self.regions = regions
+        super(AnnotationModel, self).__init__()
 
-    @property
-    def label(self):
-        return self._label
+    def _toDict(self):
+        return {
+            "type": "FeatureCollection",
+            "features": [re._toDict() for re in self.regions]
+        }
 
-    @label.setter
-    def label(self, text):
-        self._label = text
+    def toString(self):
+        return json.dumps(self._toDict())
 
-    # def toString(self):
-    #     pass
-    #
-    # def fromString(self):
-    #     pass
+    def fromString(self):
+        pass
 
-    def toMask(self, mode='auto', shape=None):
+    def save(self, filename):
+        with open(filename, 'w') as fp:
+            json.dump(self._toDict(), fp)
+
+    @staticmethod
+    def load(filename):
+        with open(filename, 'r') as fp:
+            d = json.load(fp)
+            regions = []
+            for sub_d in d['features']:
+                data = sub_d['geometry']['coordinates']
+                regions.append(AnnotationModel.__geos__[sub_d['geometry']['type']](data))
+
+        return AnnotationModel(regions)
+
+    def toMasks(self, mode='auto', shape=None):
         """
         convert to a binary mask
         :param mode
@@ -400,7 +456,15 @@ class AnnotationModel(Group):
         return mask
 
 if __name__ == '__main__':
-    l = Line(0, 0, 1, 1)
-    pl = Polyline([[3, 3], [4, 4]])
-    print(l.toString())
-    print(pl.toString())
+    # polygon = Polyline([[0, 0], [10, 10]])
+    # spline = MultiSpline(np.array([[[0, 0], [100, 100], [0, 150], [50, 200]],
+    #                                [[200, 200], [300, 300], [200, 350], [250, 400]]]))
+
+    # am = AnnotationModel([spline, polygon])
+    # print(am.toString())
+    # am.save("tmp.json")
+
+    am = AnnotationModel.load("tmp.json")
+    polygon, spline = tuple(am.regions)
+
+    print(polygon.toString())

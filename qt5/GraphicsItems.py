@@ -479,7 +479,7 @@ class LayerItem(QGraphicsItem):
 class GroupItem(ControllableItem):
     def __init__(self, items, **kwargs):
         model = Group([item.model for item in items])
-        super(GroupItem, self).__init__(model, kwargs)
+        super(GroupItem, self).__init__(model, **kwargs)
         for item in items:
             item.setParentItem(self)
 
@@ -499,9 +499,9 @@ class GroupItem(ControllableItem):
         else:
             self.rect = QRectF(self.x(), self.y(), 100, 100)
             
-    def paint(self, painter, option, widget=None):
+    def _paintMe(self, painter, option, widget=None):
         for child in self.childItems():
-            child.paint(painter, option, widget)
+            child._paintMe(painter, option, widget)
     
     def addItem(self, item):
         item.setParentItem(self)
