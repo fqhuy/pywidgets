@@ -9,7 +9,7 @@ from PyQt5 import QtGui
 from PyQt5.QtCore import (QByteArray, QDataStream, QFile, QFileInfo,
         QIODevice, QPoint, QPointF, QRectF, Qt, QRect, QSize, pyqtSignal, pyqtSlot)
 from PyQt5.QtGui import (QColor, QBrush, QPixmap, QPainter, QBitmap, QIcon, QFont, QPen, QTransform, QPainterPath)
-from PyQt5.QtWidgets import (QGraphicsScene, QGraphicsItem, QGraphicsTextItem)
+from PyQt5.QtWidgets import (QGraphicsScene, QGraphicsItem, QGraphicsTextItem, QGraphicsView)
 
 import numpy as np
 from scipy.spatial.distance import euclidean as euc
@@ -29,11 +29,17 @@ DEFAULT_ANN_EDGE_WIDTH = 1.5
 DEFAULT_IDMAN = IDManager()
 
 
+def dataModel2GraphicsItem(model):
+    if isinstance(model, str):
+        return globals()[model + 'Item']
+
+
 class InteractiveScene(QGraphicsScene):
     def __init__(self, parent=None):
         # self._active_item = None
         self._layer_stack = LayerStack()
         super(InteractiveScene, self).__init__(parent)
+        self.reset()
 
     def addItem(self, item):
         self._layer_stack.addItemToCurrentLayer(item)
@@ -63,6 +69,13 @@ class InteractiveScene(QGraphicsScene):
 
         return super(InteractiveScene, self).mousePressEvent(e)
 
+    def reset(self):
+        self._layer_stack.clear()
+        self.clear()
+        self.setBackgroundBrush(QBrush(Qt.white, Qt.SolidPattern))
+        self.addLine(0, 0, 1000, 0, QPen(Qt.DashLine))
+        self.addLine(0, 0, 0, 1000, QPen(Qt.DashLine))
+
 
 class ControllableItem(QGraphicsItem):
     """ A controllable graphics item has handles
@@ -85,8 +98,8 @@ class ControllableItem(QGraphicsItem):
         :param edge_width:
         """
         super(ControllableItem, self).__init__(parent)
-        if not issubclass(model.__class__, Geometry):
-            raise ValueError('Invalid model, need to be a subclass of Geometry')
+        # if not issubclass(model.__class__, Geometry):
+        #     raise ValueError('Invalid model, need to be a subclass of Geometry')
 
         self._model = model
         self._model.changed.connect(self.modelChanged)
@@ -305,9 +318,7 @@ class LayerStack(object):
     MAX_N_ITEMS_PER_LAYER = 1000
 
     def __init__(self):
-        self._layers = [LayerItem(self, 'default', None)]
-        self._current_layer_id = self._layers[0].idd
-        self._current_item_id = -1
+        self.clear()
 
     def __contains__(self, item):
         try:
@@ -362,7 +373,8 @@ class LayerStack(object):
 
     def layerByItemId(self, item_id):
         item = self.itemById(item_id)
-        return item.parentItem().idd
+        if item.parentItem() is not None:
+            return item.parentItem().idd
 
     def layerById(self, layer_id):
         for lx, l in enumerate(self._layers):
@@ -440,6 +452,15 @@ class LayerStack(object):
             for ix, item in enumerate(layer.items):
                 zval = lx * self.MAX_N_ITEMS_PER_LAYER + ix + 1
                 item.setZValue(zval)
+
+    def clear(self):
+        """
+        empty current stack
+        :return:
+        """
+        self._layers = [LayerItem(self, 'default', None)]
+        self._current_layer_id = self._layers[0].idd
+        self._current_item_id = -1
 
 
 class LayerItem(QGraphicsItem):
@@ -532,9 +553,9 @@ class GroupItem(ControllableItem):
 
 
 class PolylineItem(ControllableItem):
-    def __init__(self, points, **kwargs):
-        model = Polyline(points)
-        super(PolylineItem, self).__init__(model, **kwargs)
+    # def __init__(self, points, **kwargs):
+    #     model = Polyline(points)
+    #     super(PolylineItem, self).__init__(model, **kwargs)
 
     def _paintMe(self, qp, option, widget=None):
         qp.setPen(QPen(QBrush(self.edge_color), 5))
@@ -557,16 +578,16 @@ class PolylineItem(ControllableItem):
 
 
 class RectItem(ControllableItem):
-    def __init__(self, x, y, width, height, **kwargs):
-        """
-        :param x: top-left corner
-        :param y: bottom-right corner
-        :param width:
-        :param height:
-        :param kwargs: see @ControllableItem
-        """
-        model = Rect(x, y, width, height)
-        super(RectItem, self).__init__(model=model, **kwargs)
+    # def __init__(self, x, y, width, height, **kwargs):
+    #     """
+    #     :param x: top-left corner
+    #     :param y: bottom-right corner
+    #     :param width:
+    #     :param height:
+    #     :param kwargs: see @ControllableItem
+    #     """
+    #     model = Rect(x, y, width, height)
+    #     super(RectItem, self).__init__(model=model, **kwargs)
 
     def _updateRect(self):
         self.rect = self._adjustEdge(QRectF(self.model.x, self.model.y, self.model.width, self.model.height))
@@ -577,10 +598,10 @@ class RectItem(ControllableItem):
 
 
 class CircleItem(ControllableItem):
-    def __init__(self, x, y, r, **kwargs):
-        model = Circle(x, y, r)
-        super(CircleItem, self).__init__(model=model, **kwargs)
-        self._updateRect()
+    # def __init__(self, x, y, r, **kwargs):
+    #     model = Circle(x, y, r)
+    #     super(CircleItem, self).__init__(model=model, **kwargs)
+    #     self._updateRect()
 
     def _updateRect(self):
         center = self.model.center
@@ -593,9 +614,9 @@ class CircleItem(ControllableItem):
 
 
 class RingItem(ControllableItem):
-    def __init__(self, x, y, inner_r, outer_r, **kwargs):
-        model = Ring(x, y, inner_r, outer_r)
-        super(RingItem, self).__init__(model=model, **kwargs)
+    # def __init__(self, x, y, inner_r, outer_r, **kwargs):
+    #     model = Ring(x, y, inner_r, outer_r)
+    #     super(RingItem, self).__init__(model=model, **kwargs)
 
     def _updateRect(self):
         center = self.model.center
@@ -608,9 +629,9 @@ class RingItem(ControllableItem):
 
 
 class SRectItem(ControllableItem):
-    def __init__(self, x, y, inner_a, outer_a, **kwargs):
-        model = Ring(x, y, inner_a, outer_a)
-        super(SRectItem, self).__init__(model=model, **kwargs)
+    # def __init__(self, x, y, inner_a, outer_a, **kwargs):
+    #     model = Ring(x, y, inner_a, outer_a)
+    #     super(SRectItem, self).__init__(model=model, **kwargs)
 
     def _updateRect(self):
         center = self.model.center
@@ -626,9 +647,12 @@ class SRectItem(ControllableItem):
 
 
 class SplineItem(ControllableItem):
-    def __init__(self, points, **kwargs):
-        model = Spline(points)
-        super(SplineItem, self).__init__(model, **kwargs)
+    # def __init__(self, points, **kwargs):
+    #     model = Spline(points)
+    #     super(SplineItem, self).__init__(model, **kwargs)
+
+    # def __init__(self, model, **kwargs):
+    #     super(SplineItem, self).__init__(model, **kwargs)
 
     def _paintMe(self, qp, option, widget=None):
         path = QPainterPath(_QP(self.model.control_points[0]))

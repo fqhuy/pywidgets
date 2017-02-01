@@ -8,6 +8,17 @@ from skimage import draw
 import json
 
 
+class GeometryFactory(object):
+    def __init__(self):
+        pass
+
+    def createGeometry(self, geo_type, control_points):
+        if geo_type == "Polyline":
+            obj = Polyline(points=control_points)
+        elif geo_type == "Rect":
+            obj = Rect(0, 0, 0, 0)
+
+
 class Geometry(QObject):
     """A region
 
@@ -82,10 +93,10 @@ class Geometry(QObject):
 
 
 class Polyline(Geometry):
-    def __init__(self, points):
-        self._points = np.array(points)
-        if len(self._points.shape) != 2:
-            raise ValueError('invalid points')
+    def __init__(self, points=[[0, 0]] * 2):
+        self._points = np.atleast_2d(points)
+        # if len(self._points.shape) != 2:
+        #     raise ValueError('invalid points')
 
         if self._points.shape[1] != 2:
             raise ValueError('only 2D points are supported')
@@ -109,7 +120,7 @@ class Polyline(Geometry):
 
 
 class Rect(Geometry):
-    def __init__(self, x, y, width, height):
+    def __init__(self, x=0, y=0, width=0, height=0):
         self._x, self._y, self._width, self._height = x, y, width, height
         super(Rect, self).__init__()
 
@@ -152,12 +163,12 @@ class Rect(Geometry):
 
 
 class Box(Rect):
-    def __init__(self, a, x=0, y=0):
+    def __init__(self, a=0, x=0, y=0):
         super(Box, self).__init__(x, y, width=a, height=a)
 
 
 class Circle(Geometry):
-    def __init__(self, x, y, r):
+    def __init__(self, x=0, y=0, r=0):
         self.x, self.y, self.r = x, y, r
         super(Circle, self).__init__()
 
@@ -185,7 +196,7 @@ class Circle(Geometry):
 
 
 class Ring(Geometry):
-    def __init__(self, x, y, inner_r, outer_r):
+    def __init__(self, x=0, y=0, inner_r=0, outer_r=0):
         self.x, self.y, self.inner_r, self.outer_r = x, y, inner_r, outer_r
         super(Ring, self).__init__()
 
@@ -213,7 +224,7 @@ class Ring(Geometry):
 
 
 class Point(Geometry):
-    def __init__(self, x, y):
+    def __init__(self, x=0, y=0):
         self._x = x
         self._y = y
         super(Point, self).__init__()
@@ -237,14 +248,23 @@ class Point(Geometry):
     def toPolies(self):
         return np.array([[[self._x, self._y]]])
 
+    @property
+    def control_points(self):
+        return np.array([self.x, self.y])
+
+    @control_points.setter
+    def control_points(self, point):
+        self.x = point[0]
+        self.y = point[1]
+
 
 class Line(Polyline):
-    def __init__(self, x0, y0, x1, y1):
+    def __init__(self, x0=0, y0=0, x1=100, y1=100):
         super(Line, self).__init__([[x0, y0], [x1, y1]])
 
 
 class Spline(Geometry):
-    def __init__(self, points):
+    def __init__(self, points=[[0, 0]] * 4):
         self._points = np.array(points)
         if len(self._points.shape) != 2:
             raise ValueError('invalid points')
@@ -253,7 +273,6 @@ class Spline(Geometry):
             raise ValueError('only 2D points are supported')
 
         super(Spline, self).__init__()
-
 
     def toPolies(self):
         # TODO: implement this
@@ -365,7 +384,7 @@ class MultiGeometry(Geometry):
 
 
 class MultiSpline(MultiGeometry):
-    def __init__(self, points):
+    def __init__(self, points=[[[0, 0]] * 4]):
         splines = []
         for ps in points:
             splines.append(Spline(ps))
@@ -373,7 +392,7 @@ class MultiSpline(MultiGeometry):
 
 
 class MultiPolyline(Group):
-    def __init__(self, points):
+    def __init__(self, points=[[[0, 0]] * 2]):
         polygons = []
         for ps in points:
             polygons.append(Spline(ps))
