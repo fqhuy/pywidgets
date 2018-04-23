@@ -69,6 +69,7 @@ def main():
     ex = MainGUI()
     sys.exit(app.exec_())
 
+
 if __name__ == '__main__':
     main()
     # PYTHONPATH=/Users/huphan-osx/perforce/patternista python Main.py

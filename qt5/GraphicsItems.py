@@ -84,7 +84,7 @@ class ControllableItem(QGraphicsItem):
     # deleted = pyqtSignal(int, name='itemDeleted')
     HandlePositionHasChanged = 100
 
-    def __init__(self, model, color=DEFAULT_COLOR, parent=None, label="item", handle_size=10,
+    def __init__(self, model, color=DEFAULT_COLOR, parent=None, label="item", handle_size=DEFAULT_HANDLE_SIZE,
                  handle_color=DEFAULT_HANDLE_COLOR,
                  edge_color=DEFAULT_EDGE_COLOR, edge_width=DEFAULT_EDGE_WIDTH):
         """
@@ -553,10 +553,6 @@ class GroupItem(ControllableItem):
 
 
 class PolylineItem(ControllableItem):
-    # def __init__(self, points, **kwargs):
-    #     model = Polyline(points)
-    #     super(PolylineItem, self).__init__(model, **kwargs)
-
     def _paintMe(self, qp, option, widget=None):
         qp.setPen(QPen(QBrush(self.edge_color), 5))
         qp.drawPolyline(*[c.pos() for c in self.controls])
@@ -578,17 +574,6 @@ class PolylineItem(ControllableItem):
 
 
 class RectItem(ControllableItem):
-    # def __init__(self, x, y, width, height, **kwargs):
-    #     """
-    #     :param x: top-left corner
-    #     :param y: bottom-right corner
-    #     :param width:
-    #     :param height:
-    #     :param kwargs: see @ControllableItem
-    #     """
-    #     model = Rect(x, y, width, height)
-    #     super(RectItem, self).__init__(model=model, **kwargs)
-
     def _updateRect(self):
         self.rect = self._adjustEdge(QRectF(self.model.x, self.model.y, self.model.width, self.model.height))
 
@@ -598,11 +583,6 @@ class RectItem(ControllableItem):
 
 
 class CircleItem(ControllableItem):
-    # def __init__(self, x, y, r, **kwargs):
-    #     model = Circle(x, y, r)
-    #     super(CircleItem, self).__init__(model=model, **kwargs)
-    #     self._updateRect()
-
     def _updateRect(self):
         center = self.model.center
         r = self.model.r
@@ -614,10 +594,6 @@ class CircleItem(ControllableItem):
 
 
 class RingItem(ControllableItem):
-    # def __init__(self, x, y, inner_r, outer_r, **kwargs):
-    #     model = Ring(x, y, inner_r, outer_r)
-    #     super(RingItem, self).__init__(model=model, **kwargs)
-
     def _updateRect(self):
         center = self.model.center
         r = self.model.outer_r
@@ -629,10 +605,6 @@ class RingItem(ControllableItem):
 
 
 class SRectItem(ControllableItem):
-    # def __init__(self, x, y, inner_a, outer_a, **kwargs):
-    #     model = Ring(x, y, inner_a, outer_a)
-    #     super(SRectItem, self).__init__(model=model, **kwargs)
-
     def _updateRect(self):
         center = self.model.center
         r1 = self.model.outer_r
@@ -647,13 +619,6 @@ class SRectItem(ControllableItem):
 
 
 class SplineItem(ControllableItem):
-    # def __init__(self, points, **kwargs):
-    #     model = Spline(points)
-    #     super(SplineItem, self).__init__(model, **kwargs)
-
-    # def __init__(self, model, **kwargs):
-    #     super(SplineItem, self).__init__(model, **kwargs)
-
     def _paintMe(self, qp, option, widget=None):
         path = QPainterPath(_QP(self.model.control_points[0]))
         ann_path = QPainterPath()
