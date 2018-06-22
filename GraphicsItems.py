@@ -6,16 +6,13 @@ Created on Tue Sep  8 07:32:13 2015
 """
 
 from PyQt5 import QtGui
-from PyQt5.QtCore import (QByteArray, QDataStream, QFile, QFileInfo,
-        QIODevice, QPoint, QPointF, QRectF, Qt, QRect, QSize, pyqtSignal, pyqtSlot)
-from PyQt5.QtGui import (QColor, QBrush, QPixmap, QPainter, QBitmap, QIcon, QFont, QPen, QTransform, QPainterPath)
-from PyQt5.QtWidgets import (QGraphicsScene, QGraphicsItem, QGraphicsTextItem, QGraphicsView)
+from PyQt5.QtCore import (QPointF, QRectF, Qt)
+from PyQt5.QtGui import (QColor, QBrush, QFont, QPen, QTransform, QPainterPath)
+from PyQt5.QtWidgets import (QGraphicsScene, QGraphicsItem, QGraphicsTextItem)
 
-import numpy as np
-from scipy.spatial.distance import euclidean as euc
-from pywidgets.qt5.DataModels import *
-from pywidgets.qt5.Common import *
-from pywidgets.qt5.Utils import _NC, _NP, colorPixmap, _QC, _QP, _circle_to_poly
+from DataModels import *
+from Common import *
+from Utils import _NP, _QP
 
 DEFAULT_COLOR = QColor(255, 255, 150, 50)
 DEFAULT_HIGH_COLOR = Qt.yellow
