@@ -5,6 +5,10 @@ from PyQt5.QtGui import (QColor, QBrush, QPixmap, QPainter, QBitmap, QIcon, QFon
 from PyQt5.QtWidgets import (QGraphicsScene, QGraphicsItem, QGraphicsTextItem, QGraphicsView)
 
 
+class ModeRegistry(QObject):
+    pass
+
+
 class InteractiveMode(QObject):
     __metaclass__ = ModeRegistry
     ACTION_NAME = None
@@ -69,8 +73,4 @@ class ModeStack(QObject):
     """
     keep track of active modes
     """
-    pass
-
-
-class ModeRegistry(QObject):
     pass

@@ -10,9 +10,9 @@ from PyQt5.QtCore import (QPointF, QRectF, Qt)
 from PyQt5.QtGui import (QColor, QBrush, QFont, QPen, QTransform, QPainterPath)
 from PyQt5.QtWidgets import (QGraphicsScene, QGraphicsItem, QGraphicsTextItem)
 
-from DataModels import *
-from Common import *
-from Utils import _NP, _QP
+from .DataModels import *
+from .Common import *
+from .Utils import _NP, _QP
 
 DEFAULT_COLOR = QColor(255, 255, 150, 50)
 DEFAULT_HIGH_COLOR = Qt.yellow
