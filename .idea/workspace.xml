@@ -2,24 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="23fb521b-3ec1-46d7-90fe-e6059384285f" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/pywidgets.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/pywidgets.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.spyderproject" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GraphicsItems.py" beforeDir="false" afterPath="$PROJECT_DIR$/GraphicsItems.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/InteractiveScene.py" beforeDir="false" afterPath="$PROJECT_DIR$/InteractiveScene.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/examples/SimpleUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/SimpleUI.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/qt4/GraphicsItems.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/qt4/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/qt5/Common.py" beforeDir="false" afterPath="$PROJECT_DIR$/Common.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/qt5/DataModels.py" beforeDir="false" afterPath="$PROJECT_DIR$/DataModels.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/qt5/GraphicsItems.py" beforeDir="false" afterPath="$PROJECT_DIR$/GraphicsItems.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/qt5/InteractiveModes.py" beforeDir="false" afterPath="$PROJECT_DIR$/InteractiveModes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/qt5/InteractiveScene.py" beforeDir="false" afterPath="$PROJECT_DIR$/InteractiveScene.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/qt5/InteractiveView.py" beforeDir="false" afterPath="$PROJECT_DIR$/InteractiveView.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/qt5/Utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/Utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/qt5/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/qt5/sample.json" beforeDir="false" afterPath="$PROJECT_DIR$/sample.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/qt5/tmp.json" beforeDir="false" />
     </list>
     <ignored path="pywidgets.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -41,29 +27,41 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="GraphicsItems.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="GraphicsItems.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/GraphicsItems.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="165">
-              <caret line="11" lean-forward="true" selection-start-line="11" selection-end-line="11" />
+            <state relative-caret-position="120">
+              <caret line="8" selection-start-line="8" selection-end-line="8" selection-end-column="46" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Common.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Common.py">
+      <file leaf-file-name="InteractiveScene.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/InteractiveScene.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="495">
-              <caret line="33" selection-start-line="33" selection-end-line="33" />
+            <state relative-caret-position="-2602">
+              <caret line="2" column="29" lean-forward="true" selection-start-line="2" selection-start-column="29" selection-end-line="2" selection-end-column="29" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="SimpleUI.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="SimpleUI.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/examples/SimpleUI.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="75">
-              <caret line="5" lean-forward="true" selection-start-line="5" selection-end-line="5" />
+            <state relative-caret-position="105">
+              <caret line="7" column="45" selection-start-line="7" selection-start-column="45" selection-end-line="7" selection-end-column="45" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="InteractiveModes.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/InteractiveModes.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="105">
+              <caret line="7" selection-start-line="7" selection-end-line="7" />
+              <folding>
+                <element signature="e#0#23#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -94,6 +92,11 @@
       </list>
     </option>
   </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>LayerStack</find>
+    </findStrings>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
@@ -105,10 +108,12 @@
         <option value="$PROJECT_DIR$/qt5/__init__.py" />
         <option value="$PROJECT_DIR$/qt5/Common.py" />
         <option value="$PROJECT_DIR$/README.md" />
-        <option value="$PROJECT_DIR$/examples/SimpleUI.py" />
         <option value="$PROJECT_DIR$/qt5/DataModels.py" />
         <option value="$PROJECT_DIR$/qt5/GraphicsItems.py" />
+        <option value="$PROJECT_DIR$/InteractiveModes.py" />
         <option value="$PROJECT_DIR$/GraphicsItems.py" />
+        <option value="$PROJECT_DIR$/InteractiveScene.py" />
+        <option value="$PROJECT_DIR$/examples/SimpleUI.py" />
       </list>
     </option>
   </component>
@@ -121,9 +126,9 @@
   <component name="NodePackageJsonFileManager">
     <packageJsonPaths />
   </component>
-  <component name="ProjectFrameBounds">
-    <option name="x" value="4" />
-    <option name="y" value="22" />
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="67" />
+    <option name="y" value="29" />
     <option name="width" value="1436" />
     <option name="height" value="1051" />
   </component>
@@ -139,6 +144,11 @@
             <path>
               <item name="pywidgets" type="b2602c69:ProjectViewProjectNode" />
               <item name="pywidgets" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="pywidgets" type="b2602c69:ProjectViewProjectNode" />
+              <item name="pywidgets" type="462c0819:PsiDirectoryNode" />
+              <item name="examples" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -292,10 +302,18 @@
       <option name="presentableId" value="Default" />
       <updated>1441771024722</updated>
     </task>
+    <task id="LOCAL-00001" summary="changed imports">
+      <created>1529656702357</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1529656702357</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="4" y="22" width="1436" height="1051" extended-state="0" />
+    <frame x="67" y="25" width="2493" height="1055" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info anchor="bottom" id="TODO" order="6" />
@@ -306,12 +324,12 @@
       <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Python Console" order="7" weight="0.32943678" />
       <window_info anchor="bottom" id="Terminal" order="7" />
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.49946865" visible="true" weight="0.24930362" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.4994709" visible="true" weight="0.14360209" />
       <window_info anchor="bottom" id="Docker" show_stripe_button="false" />
       <window_info anchor="right" id="Database" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32837406" />
       <window_info anchor="right" id="SciView" />
-      <window_info id="Structure" order="1" sideWeight="0.5005314" side_tool="true" visible="true" weight="0.24930362" />
+      <window_info id="Structure" order="1" sideWeight="0.5005291" side_tool="true" visible="true" weight="0.14360209" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.39925835" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -337,6 +355,10 @@
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
   </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="changed imports" />
+    <option name="LAST_COMMIT_MESSAGE" value="changed imports" />
+  </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <default-breakpoints>
@@ -346,7 +368,7 @@
           </properties>
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="32" />
+      <option name="time" value="33" />
     </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
@@ -516,31 +538,12 @@
       </provider>
     </entry>
     <entry file="file://$USER_HOME$/Library/Caches/PyCharmCE2016.3/python_stubs/-1201949651/PyQt5/QtWidgets/QGraphicsSceneMouseEvent.py" />
-    <entry file="file://$PROJECT_DIR$/InteractiveModes.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <folding>
-            <element signature="e#0#23#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/InteractiveScene.py">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/InteractiveView.py">
       <provider selected="true" editor-type-id="text-editor">
         <state>
           <folding>
             <element signature="e#0#23#0" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Utils.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="414">
-          <caret line="50" column="4" selection-start-line="50" selection-start-column="4" selection-end-line="50" selection-end-column="4" />
         </state>
       </provider>
     </entry>
@@ -572,13 +575,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Common.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="495">
-          <caret line="33" selection-start-line="33" selection-end-line="33" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/DataModels.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1290">
@@ -589,17 +585,50 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/examples/SimpleUI.py">
+    <entry file="file://$PROJECT_DIR$/Utils.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="75">
-          <caret line="5" lean-forward="true" selection-start-line="5" selection-end-line="5" />
+        <state>
+          <folding>
+            <element signature="e#0#148#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Common.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="495">
+          <caret line="33" selection-start-line="33" selection-end-line="33" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/InteractiveModes.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="105">
+          <caret line="7" selection-start-line="7" selection-end-line="7" />
+          <folding>
+            <element signature="e#0#23#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/GraphicsItems.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="165">
-          <caret line="11" lean-forward="true" selection-start-line="11" selection-end-line="11" />
+        <state relative-caret-position="120">
+          <caret line="8" selection-start-line="8" selection-end-line="8" selection-end-column="46" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/InteractiveScene.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-2602">
+          <caret line="2" column="29" lean-forward="true" selection-start-line="2" selection-start-column="29" selection-end-line="2" selection-end-column="29" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/examples/SimpleUI.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="105">
+          <caret line="7" column="45" selection-start-line="7" selection-start-column="45" selection-end-line="7" selection-end-column="45" />
         </state>
       </provider>
     </entry>

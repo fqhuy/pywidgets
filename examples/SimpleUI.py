@@ -4,7 +4,8 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QVBoxLayout, QGridLayout, QWidget, QAction, QGraphicsView, \
     QMainWindow, QDockWidget
 
-from GraphicsItems import InteractiveScene, SplineItem
+from GraphicsItems import SplineItem
+from InteractiveScene import InteractiveScene
 from DataModels import Spline
 import sys
 
